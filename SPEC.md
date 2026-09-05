@@ -1989,7 +1989,7 @@ Internal values such as:
 speed_norm
 accel_norm
 relative_speed_proxy
-velocity_px_s
+heading_delta_deg
 ```
 
 may be stored as evidence but are never rendered to an operator and are never supplied to the narrator as numeric values.
@@ -2048,7 +2048,7 @@ visual_impact_severity
 severity_disclaimer
 traffic_signal_observation
 incident_timeline
-vehicle appearance
+vehicle_type
 ```
 
 No frontend field exists without an API source.
