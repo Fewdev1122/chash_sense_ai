@@ -617,7 +617,7 @@ extractors:
     evidence_keys: [signal_id, state_at_stopline, t_stopline_offset_s, confidence]
 ```
 
-Extractor coverage note. This revision defines E-1 … E-7 and E-9. `COLLISION_DETECTED`
+Extractor coverage note. This revision defines E-1 … E-7 and E-9; E-8 is reserved for a future `TRAJECTORY_CONVERGENCE` extractor and is intentionally unassigned. `COLLISION_DETECTED`
 is emitted by FR-011, not by an extractor. `TRAJECTORY_CONVERGENCE`,
 `APPROACHING_INTERSECTION`, `ENTERED_INTERSECTION`, `LANE_CHANGE_DETECTED` and
 `POST_IMPACT_ROTATION` remain declared members of `EventFactType` with no extractor
@@ -1104,10 +1104,10 @@ CREATE TABLE incidents (
   occurred_at  TIMESTAMPTZ NOT NULL,
   status       incident_status NOT NULL,
   priority     SMALLINT NOT NULL,       -- CREATE_INCIDENT_PRIORITY, from severity (§13.3).
-                                        -- OPEN: the severity-band -> priority mapping, including
-                                        -- the value used when the band is UNKNOWN, is not yet
-                                        -- specified. Phase 10 (FR-017) cannot insert a row until
-                                        -- it is. No default is asserted here (P-12).
+                                        -- TBD-BASELINE: the severity-band -> priority mapping,
+                                        -- including the value used when the band is UNKNOWN, is
+                                        -- not yet measured. Phase 10 (FR-017) cannot insert a row
+                                        -- until it is resolved. No default is asserted here (P-12).
   verified_by  UUID REFERENCES users(user_id),
   verified_at  TIMESTAMPTZ,
   operator_decision TEXT,               -- CONFIRMED | REJECTED, never overwrites AI output
@@ -1215,6 +1215,7 @@ Current head: `0001_initial`. This is a greenfield build: the repository contain
 No pre-v0.4 CrashSense database exists. The v0.1–v0.3 upgrade material is retained for reference only and has been moved out of the implementation path into **Appendix A**. It is not implemented, not migrated, not tested and not part of the Definition of Done. Appendix A and test F-9 are the only two places in this document permitted to name superseded identifiers.
 
 §17 Incident Workflow
+§17.1 Incident Lifecycle Requirements
 FR-017 — Incident Creation · MVP MUST
 The worker calls POST /internal/incidents with the full analysis payload. The API validates, persists atomically (incident + analysis + vehicles + timeline + artefacts), and assigns priority from Visual Impact Severity.
 
@@ -1734,6 +1735,7 @@ Pipeline & correctness
  All TBD-BASELINE thresholds resolved to measured values and recorded in docs/evaluation/; no TBD-BASELINE value appears in any published artefact.
  Every incident carries config_hash, model_version and all 7 evidence artefacts.
  Rejected candidates persisted with score breakdown and reason.
+ Camera registry rejects deletion of a camera with incidents (409 E_CAMERA_IN_USE); every incident resolves to a registered camera with coordinates (FR-001). Rejected video uploads return a typed error code; no partial video enters the job queue (FR-002).
 Event explanation
 
  Every Observed Event Fact carries resolvable evidence_keys (EX-6 green).
