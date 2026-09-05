@@ -1,0 +1,13 @@
+# config/severity_weights.yaml
+# Feature weights for severity_score (FR-015, SPEC.md §13.1-§13.2). Must be
+# non-negative and sum to 1.0; validated at start-up (§14.3, test DEC-1).
+# Per P-12, an unmeasured value is written literally as TBD-BASELINE, never a
+# provisional number.
+version: 1
+
+closing_rate_norm_pre: TBD-BASELINE
+delta_speed_norm: TBD-BASELINE
+post_impact_displacement_norm: TBD-BASELINE
+post_impact_rotation_deg: TBD-BASELINE   # Enhanced tier only; omitted otherwise
+overlap_depth: TBD-BASELINE
+vehicle_count: TBD-BASELINE

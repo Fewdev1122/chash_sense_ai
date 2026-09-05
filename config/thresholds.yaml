@@ -1,0 +1,13 @@
+# config/thresholds.yaml
+# Weights for collision_score = Sum(Wi * Si), i in S1..S6 (FR-010, SPEC.md §11.1).
+# Must be non-negative and sum to 1.0; validated at start-up (§14.3, test DEC-1).
+# Per P-12, an unmeasured value is written literally as TBD-BASELINE, never a
+# provisional number.
+version: 1
+
+W_S1: TBD-BASELINE
+W_S2: TBD-BASELINE
+W_S3: TBD-BASELINE
+W_S4: TBD-BASELINE
+W_S5: TBD-BASELINE
+W_S6: TBD-BASELINE

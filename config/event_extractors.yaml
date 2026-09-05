@@ -1,0 +1,73 @@
+# config/event_extractors.yaml
+# Ordered. Each extractor is a pure function of trajectory measurements and
+# these gates. requires_evidence lists the measurement keys that must all be
+# present and non-UNKNOWN, or the extractor cannot fire (test EX-2).
+# Verbatim from SPEC.md §12.2.
+version: 1
+
+extractors:
+  - id: E-1
+    emits: DECELERATION_DETECTED
+    scope: single_track
+    requires_evidence: [accel_norm, speed_norm, t_s]
+    gate: accel_norm <= -DECEL_NORM_MIN
+    evidence_keys: [accel_norm, speed_norm_before, speed_norm_after, t_s]
+
+  - id: E-2
+    emits: SUDDEN_DECELERATION
+    scope: single_track
+    requires_evidence: [accel_norm, speed_norm, t_s]
+    gate: accel_norm <= -SUDDEN_DECEL_NORM_MIN and ramp_s <= SUDDEN_DECEL_RAMP_MAX_S
+    supersedes: E-1          # same track, overlapping interval (test EX-3)
+    evidence_keys: [accel_norm, ramp_s, speed_norm_before, speed_norm_after]
+
+  - id: E-3
+    emits: CROSSED_OTHER_VEHICLE_TRAJECTORY
+    scope: track_pair
+    requires_evidence: [path_a, path_b, crossing_point, crossing_conf]
+    gate: crossing_conf >= CROSSING_MIN_CONF
+    evidence_keys: [crossing_point_x, crossing_point_y, crossing_offset_s, crossing_conf]
+
+  - id: E-4
+    emits: RAPID_CLOSING
+    scope: track_pair
+    requires_evidence: [centroid_distance, closing_rate_norm, t_s]
+    gate: closing_rate_norm >= RAPID_CLOSING_NORM_MIN and duration_s >= RAPID_CLOSING_MIN_S
+    evidence_keys: [closing_rate_norm, centroid_distance_min, duration_s]
+
+  - id: E-5
+    emits: HEADING_CHANGE
+    scope: single_track
+    requires_evidence: [heading_deg, heading_delta_deg]
+    gate: abs(heading_delta_deg) >= HEADING_CHANGE_MIN_DEG
+    evidence_keys: [heading_deg_before, heading_deg_after, heading_delta_deg]
+
+  - id: E-6
+    emits: [MOVING_STRAIGHT, TURNING_LEFT, TURNING_RIGHT]
+    scope: single_track
+    requires_evidence: [heading_deg, displacement_px]
+    gate: displacement_px >= MIN_DISPLACEMENT_PX
+    selection:
+      MOVING_STRAIGHT: abs(heading_integral_deg) < TURN_MIN_DEG
+      TURNING_LEFT:    heading_integral_deg <= -TURN_MIN_DEG
+      TURNING_RIGHT:   heading_integral_deg >= TURN_MIN_DEG
+    evidence_keys: [heading_integral_deg, displacement_px, window_s]
+
+  - id: E-7
+    emits: POST_IMPACT_STOP
+    scope: single_track
+    window: post_t0
+    requires_evidence: [speed_norm, t_s]
+    gate: speed_norm <= STOPPED_SPEED_NORM_MAX for >= STOPPED_MIN_S
+    evidence_keys: [speed_norm, stopped_duration_s, t_s]
+
+  - id: E-9
+    emits: [TRAFFIC_SIGNAL_RED, TRAFFIC_SIGNAL_YELLOW, TRAFFIC_SIGNAL_GREEN]
+    scope: single_track
+    tier: MVP_SHOULD
+    requires_evidence: [reason_code, state_at_stopline, t_stopline_offset_s]
+    gate: reason_code == "ASSOCIATED"    # test F-6
+    evidence_keys: [signal_id, state_at_stopline, t_stopline_offset_s, confidence]
+
+# E-8 is reserved for a future TRAJECTORY_CONVERGENCE extractor and is
+# intentionally unassigned (SPEC.md §12.2).
