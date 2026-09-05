@@ -518,7 +518,7 @@ Acceptance criteria.
 100 % reproducible for identical input + config_hash; asserted by re-running each evaluation clip and diffing the fact list byte-for-byte (EX-1).
 Every fact carries non-empty evidence_keys resolving to concrete measurements (EX-6). A fact without measurement is a hard failure.
 Forbidden-phrase test (F-8) on both description paths: output never contains cause, caused by, at fault, fault, guilty, liable, negligent, responsible, responsibility, blame, violation, violated, ran a red light, failed to stop, did not stop, should have, was supposed to, illegal, reckless, careless, error by — case-insensitive, plus configured local-language equivalents.
-No TRAFFIC_SIGNAL_* fact is emitted unless signal_association_reason == ASSOCIATED (F-6); a camera with no configured signal emits none at all (EX-4).
+No TRAFFIC_SIGNAL_* fact is emitted unless reason_code == ASSOCIATED (F-6); a camera with no configured signal emits none at all (EX-4).
 A camera with no signal configuration produces a complete, valid explanation. Signal enrichment is never load-bearing.
 The full pipeline produces a valid event_description with LLM_ENABLED=false (N-4).
 No code path maps an observation to a conclusion about cause, fault, violation or responsibility — asserted structurally by F-10.
@@ -612,9 +612,9 @@ extractors:
     emits: [TRAFFIC_SIGNAL_RED, TRAFFIC_SIGNAL_YELLOW, TRAFFIC_SIGNAL_GREEN]
     scope: single_track
     tier: MVP_SHOULD
-    requires_evidence: [signal_association_reason, state_at_stopline, t_stopline_offset_s]
-    gate: signal_association_reason == "ASSOCIATED"    # test F-6
-    evidence_keys: [signal_id, state_at_stopline, t_stopline_offset_s, signal_confidence]
+    requires_evidence: [reason_code, state_at_stopline, t_stopline_offset_s]
+    gate: reason_code == "ASSOCIATED"    # test F-6
+    evidence_keys: [signal_id, state_at_stopline, t_stopline_offset_s, confidence]
 ```
 
 Extractor coverage note. This revision defines E-1 … E-7 and E-9. `COLLISION_DETECTED`
@@ -1376,7 +1376,7 @@ POST /internal/incidents rejects any payload containing a superseded analysis fi
 
 Response invariants. accident_timeline and observed_event_facts are always sorted ascending by time_offset_s · every severity field is accompanied by severity_disclaimer · every description field is accompanied by event_description_disclaimer · no field exposes a speed value in any unit · _internal_* fields appear only inside structured_event_evidence and tracks.json, never at the top level.
 
-List item shape. GET /api/incidents returns incident_id, camera_name, occurred_at, status, collision_type, visual_impact_severity + disclaimer, truncated event_description + disclaimer, and vehicles[].{label, vehicle_class, color_render}.
+List item shape. GET /api/incidents returns incident_id, camera_name, occurred_at, status, collision_type, visual_impact_severity + disclaimer, truncated event_description + disclaimer, and vehicles[].{label, vehicle_type, color_render}.
 
 §19 Frontend
 §19.1 Components
@@ -1956,7 +1956,7 @@ but the event timeline and Observed Event Facts do not fabricate a signal event.
 
 ### §34.4 Description Integrity
 
-Three deterministic templates exist and are tested:
+Four deterministic templates exist and are tested:
 
 * **T-1:** two-vehicle collision
 * **T-2:** single-vehicle collision
