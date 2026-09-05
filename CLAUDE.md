@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-No code exists yet — this repo currently contains only `SPEC.md` (the full software specification, v0.4), `README.md`, and `.gitignore`. There is no build, lint, or test tooling to run yet. When implementation starts, follow the repository structure and phase order defined in `SPEC.md` §5 and §30 rather than improvising a different layout — the spec is implementation-ready and prescriptive on purpose.
+The full `SPEC.md` §5 repository layout has been scaffolded (`backend/`, `ai/`, `config/`, `frontend/`, `worker/`, `docs/evaluation/`, `tests/`) — every file and directory the spec names exists, each stub annotated with its owning `FR-xxx`/section. **No pipeline, API, or business logic has been implemented yet.** Two exceptions carry real content because the spec gives it verbatim: `config/event_extractors.yaml` (the E-1…E-9 extractor definitions) and the `SEVERITY_DISCLAIMER`/`EVENT_DESCRIPTION_DISCLAIMER` strings (`frontend/src/constants/disclaimers.ts`, mirrored into `backend/app/domain/severity.py`). There is no build, lint, or test tooling wired up yet, and no Phase 0 dataset work has started (`docs/evaluation/*.md` are all placeholders).
 
-Before writing any code, read the relevant `SPEC.md` section for the feature (`FR-xxx` requirement IDs are referenced throughout) — this project treats a spec/implementation mismatch as a defect, not a style choice.
+Per `SPEC.md` §30/§31, actual implementation follows the phase order and Dev1(CV)/Dev2(backend+frontend)/Member3(eval+annotation) split already defined there — that table is the project plan; nothing else tracks "what's next" separately. Before writing logic into any stub, read the relevant `SPEC.md` section for that feature (`FR-xxx` requirement IDs are referenced throughout) — this project treats a spec/implementation mismatch as a defect, not a style choice.
 
 ## Project
 
