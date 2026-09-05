@@ -2284,7 +2284,7 @@ Test `D-6` (§32) exercises this path against a synthetic pre-v0.4 fixture. It i
 
 ## Final Specification Status
 
-**Version:** `0.4`
+**Version:** `0.4.1`
 **Status:** Implementation-ready after §29 Build Gate validation
 **Primary architecture:** deterministic vision and event reconstruction
 **Optional narration:** `STRETCH`, default off
