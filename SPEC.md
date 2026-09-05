@@ -1,5 +1,5 @@
 CrashSense AI — Software Specification
-Document: SPEC.md Version: 0.4 (consolidated) Status: Implementation-ready Scope: 8-week hackathon build · 3 contributors Supersedes: v0.1, v0.2, v0.2.1, v0.3 and all interim patches
+Document: SPEC.md Version: 0.4.1 (consolidated) Status: Implementation-ready Scope: 8-week hackathon build · 2 contributors Supersedes: v0.1, v0.2, v0.2.1, v0.3 and all interim patches
 
 §0 Document Control
 §0.1 Founding Principles (binding, unchanged since v0.1)
@@ -32,6 +32,7 @@ Version	Summary
 0.2.1	Consistency patch: motorcycle demoted to STRETCH behind a Phase 0 dataset-sufficiency gate; severity disclaimer made mandatory on every rendering surface; responder workflow states declared simulated.
 0.3	Terminology and contract patch toward observation-only reasoning.
 0.4	Architectural replacement. The Cause-Analysis feature is deleted — requirement, rule engine, taxonomy, storage, API surface, UI panel, tests and evaluation metric — and replaced by FR-014 Accident Event Reconstruction & Explanation. Vehicle appearance (FR-022) and constrained LLM narration (FR-023) added. Evaluation replaced by five grounding-oriented measures.
+0.4.1	Team-size correction: reduced from 3 contributors to 2 (Dev 1 CV/AI, Dev 2 platform). Member 3-owned artefacts reassigned; EE-E rater protocol changed to a single external non-contributor rater with downgrade-on-disagreement, replacing the three-person adjudication model.
 Legacy-name carve-out. Superseded identifiers from v0.1–v0.3 appear in exactly two places in this document, both outside the MVP product path and outside the implementation: the reference-only historical upgrade material in Appendix A (a DROP statement must name what it drops) and the repo-wide grep test F-9 in §32 (a guard must name what it forbids). They exist nowhere else, in no product surface, and in no runtime code path.
 
 §0.4 Terminology
@@ -96,7 +97,7 @@ Out of MVP: RTSP ingestion (STRETCH, FR-024) · LLM narration (STRETCH, FR-023) 
 Role	Description	Capabilities
 Administrator	Configures the system	Register cameras, configure signal geometry (§10.5), upload clips, manage users, view all incidents
 Operator	Reviews and triages incidents	View dashboard, replay evidence, verify (Accept/Reject), advance simulated responder states, add notes
-Evaluator (internal)	Team member 3	Runs evaluation harness, annotates the demo set, signs off TBD-BASELINE resolutions and the motorcycle sufficiency decision
+Evaluator (internal)	Dev 1	Runs evaluation harness, annotates the demo set, signs off TBD-BASELINE resolutions and the motorcycle sufficiency decision
 Agent (non-human)	The autonomous pipeline	Perceives, reasons, decides, acts — bounded by §14 thresholds and always routed to a human
 §3 System Overview
 
@@ -244,7 +245,7 @@ Processing. YOLO exported to ONNX, executed via ONNX Runtime with CUDA EP → CP
 
 Primary MVP classes: car (COCO 2), bus (5), truck (7). Optional class (STRETCH): motorcycle (COCO 3), enabled only via MOTORCYCLE_ENABLED=true (default false). Conditional class: traffic_light (9), captured only when signal analysis is enabled (FR-008).
 
-Motorcycle gate. Phase 0 dataset inspection records motorcycle instance counts, clip counts and collision-involved clip counts per split into docs/evaluation/class_coverage.md. Motorcycle is promoted from STRETCH to MVP SHOULD only if it clears the sufficiency thresholds agreed at Phase 0 exit (TBD-BASELINE). Until that check passes and is signed off by Member 3, motorcycle remains off by default and is excluded from every acceptance gate. Rationale: unverified evaluated coverage, small-bbox instability in normalisation, higher occlusion and ID-switch rates — none of which we can currently quantify, and none of which we will assert without measurement.
+Motorcycle gate. Phase 0 dataset inspection records motorcycle instance counts, clip counts and collision-involved clip counts per split into docs/evaluation/class_coverage.md. Motorcycle is promoted from STRETCH to MVP SHOULD only if it clears the sufficiency thresholds agreed at Phase 0 exit (TBD-BASELINE). Until that check passes and is signed off by Dev 1, motorcycle remains off by default and is excluded from every acceptance gate. Rationale: unverified evaluated coverage, small-bbox instability in normalisation, higher occlusion and ID-switch rates — none of which we can currently quantify, and none of which we will assert without measurement.
 
 Acceptance criteria.
 
@@ -1452,12 +1453,12 @@ Reporting reconciliation. Headline detection, tracking and collision metrics are
 §22.2 Annotation Work
 
 Artefact	Owner	Used by
-Detector spot-check log (pass/fail per clip, no bounding boxes)	Member 3	FR-005, §24.1
-MOT subset (track IDs, no bounding boxes)	Member 3	FR-006, §24.1 ID switches / continuity
-t0 labels	Member 3	FR-011
-Signal geometry + state, demo intersection only	Member 3 + Admin UI	FR-008, FR-009
-Appearance colour labels (small set)	Member 3	FR-022
-Important-event lists per demo clip	Member 3 (2 passes)	§24.3 EE-C, EE-D
+Detector spot-check log (pass/fail per clip, no bounding boxes)	Dev 1	FR-005, §24.1
+MOT subset (track IDs, no bounding boxes)	Dev 1	FR-006, §24.1 ID switches / continuity
+t0 labels	Dev 1	FR-011
+Signal geometry + state, demo intersection only	Dev 2 + Admin UI	FR-008, FR-009
+Appearance colour labels (small set)	Dev 1	FR-022
+Important-event lists per demo clip	Dev 1 + Dev 2 (2 passes, both required — the same person cannot do both passes on a given clip)	§24.3 EE-C, EE-D
 Annotators are instructed to record only what is visible and are explicitly forbidden from annotating cause, fault or violation.
 
 §23 Demo
@@ -1505,7 +1506,7 @@ EE-A	Evidence Grounding	Fraction of factual claims in the description that map t
 EE-B	Unsupported Claim Rate	Share of generated statements not supported by StructuredEventEvidence	Target 0. Any non-zero UCR blocks LLM_ENABLED=true in the demo
 EE-C	Event Coverage	Share of important annotated events present in the description	TBD-BASELINE
 EE-D	Temporal Ordering Accuracy	Share of clips whose described order matches annotated chronology	TBD-BASELINE
-EE-E	Human Review	Two independent raters per clip → Correct / Partially Correct / Incorrect / Unsupported; Member 3 adjudicates disagreement	TBD-BASELINE; any Unsupported rating blocks the LLM path
+EE-E	Human Review	Two raters per clip: Dev 1 or Dev 2 (whichever did not build the description path being rated) plus one external non-contributor rater who did not write any code in the repo → Correct / Partially Correct / Incorrect / Unsupported. On disagreement, the lower (worse) rating applies — no adjudicator role exists.	TBD-BASELINE; any Unsupported rating blocks the LLM path
 Explicitly not evaluated: accident cause · contributing factors · legal responsibility · fault attribution · driver behaviour correctness · traffic-law violation detection. Stated in the evaluation report and the Devpost submission.
 
 §24.4 Failure-Case Catalogue
@@ -1654,18 +1655,18 @@ Phase 10 delivers evidence packaging (FR-016) before incident creation (FR-017),
 Deterministic event extraction (Phase 7) always precedes optional narration (Phase 13). Narration is never on the critical path.
 
 §31 Team & 8-Week Plan
-Team: Dev 1 (CV/AI pipeline) · Dev 2 (backend, API, database, frontend) · Member 3 (evaluation, annotation, documentation, demo).
+Team: Dev 1 (CV/AI pipeline, dataset, evaluation) · Dev 2 (backend, API, database, frontend, delivery).
 
 
-Week	Dev 1	Dev 2	Member 3
-1	Phase 0 inspection, model export	Phase 1 scaffold, schema, CI	Phase 0 splits, class_coverage.md
-2	Phase 3 detection + tracking	Phase 2 ingestion, job queue, worker	MOT subset annotation
-3	Phase 4 trajectory + measurement harvest	Phase 2 hardening, /internal contract	t0 labelling
-4	Phase 5 collision + classification	API contract §18, seed data	Build Gate review, eval harness v1
-5	Phase 6 timeline, then Phase 7 in order: facts → evidence assembly → templates	Phase 8 severity, Phase 9 decision engine + §14.3 start-up validation	Important-event annotation, appearance labels
-6	Phase 10 evidence packaging + annotated rendering (FR-016)	Phase 10 incident creation (FR-017, after FR-016 lands), Phase 11 frontend dashboard	EE-C/EE-D annotation pass 2
-7	Phase 12 signal association	Phase 11 polish, disclaimer enforcement, ESLint rules	Phase 14 evaluation, ablation, failure catalogue
-8	Phase 13 narration (only if all MVP MUST green)	Hardening, accessibility, breakpoints	Phase 15 Devpost, demo script, disclosure review, DoD audit
+Week	Dev 1	Dev 2
+1	Phase 0 inspection, model export; Phase 0 splits, class_coverage.md	Phase 1 scaffold, schema, CI
+2	Phase 3 detection + tracking; MOT subset annotation	Phase 2 ingestion, job queue, worker
+3	Phase 4 trajectory + measurement harvest; t0 labelling	Phase 2 hardening, /internal contract
+4	Phase 5 collision + classification; Build Gate review, eval harness v1	API contract §18, seed data
+5	Phase 6 timeline, then Phase 7 in order: facts → evidence assembly → templates; important-event annotation pass 1; appearance colour labels	Phase 8 severity, Phase 9 decision engine + §14.3 start-up validation
+6	Phase 10 evidence packaging + annotated rendering (FR-016)	Phase 10 incident creation (FR-017, after FR-016 lands), Phase 11 frontend dashboard; EE-C/EE-D annotation pass 2 (different rater from week 5's pass 1, per §22.2)
+7	Phase 12 signal association (cut if week runs long — lowest-priority item in this row now that Phase 14 evaluation work has merged in); Phase 14 evaluation, ablation, failure catalogue	Phase 11 polish, disclaimer enforcement, ESLint rules
+8	Phase 13 narration (only if all MVP MUST green)	Hardening, accessibility, breakpoints; Phase 15 Devpost, demo script, disclosure review, DoD audit
 Weekly ritual: Monday scope check against §0.2 tiers · Friday demo of whatever runs end-to-end. If a STRETCH item threatens an MVP MUST item, the STRETCH item is cut that day, without discussion.
 
 §32 Testing
